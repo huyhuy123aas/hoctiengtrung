@@ -60,24 +60,40 @@ h1{margin:0 0 4px;font-size:2rem;line-height:1.2;font-weight:800;letter-spacing:
 .foot{margin-top:28px}
 :focus-visible{outline:3px solid var(--seal);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+#tabs button{font-size:.88rem}
+#filters{margin-bottom:4px}#filters .chips{margin-bottom:10px}
+.opt-l{display:inline-flex;align-items:center;gap:6px;margin:0 14px 10px 0;font-size:.9rem;color:var(--mute);cursor:pointer}
+.az{gap:4px}.az .chip{min-width:2.1rem;padding:3px 6px;text-align:center;font-size:.8rem}
+#sq{width:100%;font:1rem "Be Vietnam Pro",system-ui,sans-serif;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--sf);color:var(--ink)}
+#lb h2{margin:18px 0 4px;padding-bottom:2px;border-bottom:2px solid var(--grid);font-size:1.3rem;color:var(--gt)}
+.rw{display:grid;grid-template-columns:minmax(3.5rem,auto) 1fr auto auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.hzl{font:1.6rem/1.2 var(--hz)}
+.rt b{display:block;font:600 1rem var(--py);color:var(--gt)}
+.rt small{display:block;color:var(--mute);font-size:.75rem}
+.rw button{font:600 .8rem "Be Vietnam Pro",system-ui,sans-serif;border:1.5px solid var(--line);background:var(--sf);color:var(--ink);border-radius:6px;padding:4px 10px;cursor:pointer}
+.rw .k.on{background:var(--gt);border-color:var(--gt);color:var(--bg)}
 </style>
 </head>
 <body>
 <main>
 <header>
   <h1>Học tiếng Trung</h1>
-  <p class="sub">Từ vựng HSK 1 cho người Việt: nhìn chữ, nghe âm, nhớ nghĩa.</p>
+  <p class="sub">Từ vựng HSK 1 và 2 xếp theo thứ tự a, b, c: nhìn chữ, nghe âm, nhớ nghĩa.</p>
   <div class="prog"><span id="pt"></span><div class="bar"><i id="pb"></i></div></div>
 </header>
 
 <nav id="tabs" role="tablist">
   <button role="tab" aria-selected="true" data-t="learn">Thẻ từ</button>
+  <button role="tab" aria-selected="false" data-t="lst">Danh sách</button>
   <button role="tab" aria-selected="false" data-t="quiz">Trắc nghiệm</button>
   <button role="tab" aria-selected="false" data-t="tone">Thanh điệu</button>
 </nav>
 
+<div id="filters"><div class="chips" id="lv"></div><div class="chips az" id="az"></div></div>
+
 <section id="learn">
-  <div class="chips" id="chips"></div>
+  <label class="opt-l"><input type="checkbox" id="optpy" checked> Hiện sẵn pinyin</label><label class="opt-l"><input type="checkbox" id="optau"> Tự đọc khi chuyển thẻ</label>
   <p class="hint" id="pos"></p>
   <div class="cw" style="margin-top:8px">
     <button class="card g" id="card" title="Chạm để xem nghĩa">
@@ -98,6 +114,8 @@ h1{margin:0 0 4px;font-size:2rem;line-height:1.2;font-weight:800;letter-spacing:
   <p class="hint" id="msg"></p>
 </section>
 
+<section id="lst" hidden><input type="search" id="sq" placeholder="Tìm chữ Hán, pinyin hoặc nghĩa" aria-label="Tìm từ"><div id="lb"></div></section>
+
 <section id="quiz" hidden><div id="qb"></div></section>
 
 <section id="tone" hidden>
@@ -110,75 +128,102 @@ h1{margin:0 0 4px;font-size:2rem;line-height:1.2;font-weight:800;letter-spacing:
 </main>
 
 <script>
-const D=[
-["Chào hỏi","你好|nǐ hǎo|Xin chào|nhĩ hảo;谢谢|xièxie|Cảm ơn|tạ tạ;不客气|bú kèqi|Đừng khách sáo|bất khách khí;对不起|duìbuqǐ|Xin lỗi|đối bất khởi;没关系|méi guānxi|Không sao đâu|;再见|zàijiàn|Tạm biệt|tái kiến;请|qǐng|Xin mời, làm ơn|thỉnh;早上好|zǎoshang hǎo|Chào buổi sáng|tảo thượng hảo"],
-["Số đếm","一|yī|Một|nhất;二|èr|Hai|nhị;三|sān|Ba|tam;四|sì|Bốn|tứ;五|wǔ|Năm|ngũ;六|liù|Sáu|lục;七|qī|Bảy|thất;八|bā|Tám|bát;九|jiǔ|Chín|cửu;十|shí|Mười|thập"],
-["Gia đình","我|wǒ|Tôi|ngã;你|nǐ|Bạn|nhĩ;他|tā|Anh ấy|tha;妈妈|māma|Mẹ|;爸爸|bàba|Bố, ba|;哥哥|gēge|Anh trai|ca ca;姐姐|jiějie|Chị gái|tỷ tỷ;弟弟|dìdi|Em trai|đệ đệ"],
-["Ăn uống","水|shuǐ|Nước|thủy;茶|chá|Trà|trà;饭|fàn|Cơm, bữa ăn|phạn;米饭|mǐfàn|Cơm trắng|mễ phạn;吃|chī|Ăn|;喝|hē|Uống|;苹果|píngguǒ|Quả táo|bình quả;牛奶|niúnǎi|Sữa bò|ngưu nãi"]];
+const H1=`爱|ài|yêu|ái;爱好|àihào|sở thích|ái hiếu;八|bā|tám|bát;爸爸|bàba|bố, ba;杯子|bēizi|cái cốc|bôi tử;北京|Běijīng|Bắc Kinh|Bắc Kinh;本|běn|quyển (lượng từ)|bản;不客气|bú kèqi|đừng khách sáo|bất khách khí;不|bù|không|bất;菜|cài|món ăn, rau|thái;茶|chá|trà|trà;吃|chī|ăn;出租车|chūzūchē|xe taxi|xuất tô xa;打电话|dǎ diànhuà|gọi điện thoại;大|dà|to, lớn|đại;的|de|của (trợ từ);点|diǎn|giờ, chút|điểm;电脑|diànnǎo|máy tính|điện não;电视|diànshì|ti vi|điện thị;电影|diànyǐng|phim|điện ảnh;东西|dōngxi|đồ vật;都|dōu|đều, tất cả|đô;读|dú|đọc|độc;对不起|duìbuqǐ|xin lỗi|đối bất khởi;多|duō|nhiều|đa;多少|duōshao|bao nhiêu|đa thiểu;儿子|érzi|con trai|nhi tử;二|èr|hai|nhị;饭馆|fànguǎn|quán ăn|phạn quán;飞机|fēijī|máy bay|phi cơ;分钟|fēnzhōng|phút|phân chung;高兴|gāoxìng|vui|cao hứng;个|gè|cái (lượng từ)|cá;工作|gōngzuò|công việc, làm việc|công tác;狗|gǒu|con chó|cẩu;汉语|Hànyǔ|tiếng Trung|Hán ngữ;好|hǎo|tốt, hay|hảo;号|hào|ngày, số|hiệu;喝|hē|uống;和|hé|và|hòa;很|hěn|rất;后面|hòumian|phía sau|hậu diện;回|huí|về|hồi;会|huì|biết, sẽ|hội;几|jǐ|mấy|kỷ;家|jiā|nhà|gia;叫|jiào|gọi, tên là|khiếu;今天|jīntiān|hôm nay|kim thiên;九|jiǔ|chín|cửu;开|kāi|mở, lái|khai;看|kàn|xem, nhìn|khán;看见|kànjiàn|nhìn thấy|khán kiến;块|kuài|đồng (tiền)|khối;来|lái|đến|lai;老师|lǎoshī|giáo viên|lão sư;了|le|rồi (trợ từ);冷|lěng|lạnh|lãnh;里|lǐ|bên trong|lý;六|liù|sáu|lục;妈妈|māma|mẹ;吗|ma|trợ từ nghi vấn;买|mǎi|mua|mãi;猫|māo|con mèo|miêu;没关系|méi guānxi|không sao đâu;没有|méiyǒu|không có;米饭|mǐfàn|cơm|mễ phạn;名字|míngzi|tên|danh tự;明天|míngtiān|ngày mai|minh thiên;哪|nǎ|nào;哪儿|nǎr|ở đâu;那|nà|kia, đó;呢|ne|nhỉ (trợ từ);能|néng|có thể|năng;你|nǐ|bạn|nhĩ;年|nián|năm|niên;女儿|nǚ’ér|con gái|nữ nhi;朋友|péngyou|bạn bè|bằng hữu;漂亮|piàoliang|đẹp|phiêu lượng;苹果|píngguǒ|quả táo|bình quả;七|qī|bảy|thất;前面|qiánmian|phía trước|tiền diện;钱|qián|tiền|tiền;请|qǐng|mời, xin|thỉnh;去|qù|đi|khứ;热|rè|nóng|nhiệt;人|rén|người|nhân;认识|rènshi|quen biết|nhận thức;三|sān|ba|tam;商店|shāngdiàn|cửa hàng|thương điếm;上|shàng|trên, lên|thượng;上午|shàngwǔ|buổi sáng|thượng ngọ;少|shǎo|ít|thiểu;谁|shéi|ai|thùy;什么|shénme|cái gì|thập ma;十|shí|mười|thập;时候|shíhou|lúc, khi|thời hậu;是|shì|là|thị;书|shū|sách|thư;水|shuǐ|nước|thủy;水果|shuǐguǒ|hoa quả|thủy quả;睡觉|shuìjiào|ngủ|thụy giác;说|shuō|nói|thuyết;四|sì|bốn|tứ;岁|suì|tuổi|tuế;他|tā|anh ấy|tha;她|tā|cô ấy;太|tài|quá|thái;天气|tiānqì|thời tiết|thiên khí;听|tīng|nghe|thính;同学|tóngxué|bạn học|đồng học;喂|wèi|alô;我|wǒ|tôi|ngã;我们|wǒmen|chúng tôi|ngã môn;五|wǔ|năm|ngũ;喜欢|xǐhuan|thích|hỉ hoan;下|xià|dưới, xuống|hạ;下午|xiàwǔ|buổi chiều|hạ ngọ;下雨|xià yǔ|trời mưa|hạ vũ;先生|xiānsheng|ông, ngài|tiên sinh;现在|xiànzài|bây giờ|hiện tại;想|xiǎng|muốn, nhớ|tưởng;小|xiǎo|nhỏ|tiểu;小姐|xiǎojiě|cô, tiểu thư|tiểu thư;些|xiē|một vài;写|xiě|viết|tả;谢谢|xièxie|cảm ơn|tạ tạ;星期|xīngqī|tuần, thứ|tinh kỳ;学生|xuésheng|học sinh|học sinh;学习|xuéxí|học tập|học tập;学校|xuéxiào|trường học|học hiệu;一|yī|một|nhất;衣服|yīfu|quần áo|y phục;医生|yīshēng|bác sĩ|y sinh;医院|yīyuàn|bệnh viện|y viện;椅子|yǐzi|cái ghế|ỷ tử;有|yǒu|có|hữu;月|yuè|tháng|nguyệt;再见|zàijiàn|tạm biệt|tái kiến;在|zài|ở, đang|tại;怎么|zěnme|thế nào, sao;怎么样|zěnmeyàng|như thế nào;这|zhè|này, đây;中国|Zhōngguó|Trung Quốc|Trung Quốc;中午|zhōngwǔ|buổi trưa|trung ngọ;住|zhù|ở, sống|trú;桌子|zhuōzi|cái bàn;字|zì|chữ|tự;昨天|zuótiān|hôm qua|tạc thiên;坐|zuò|ngồi|tọa;做|zuò|làm`,H2=`吧|ba|nhé, đi (trợ từ);白|bái|trắng|bạch;百|bǎi|trăm|bách;帮助|bāngzhù|giúp đỡ|bang trợ;报纸|bàozhǐ|tờ báo|báo chỉ;比|bǐ|so với|tỉ;别|bié|đừng|biệt;长|cháng|dài|trường;唱歌|chànggē|hát|xướng ca;出|chū|ra|xuất;穿|chuān|mặc;次|cì|lần|thứ;从|cóng|từ, theo|tòng;错|cuò|sai|thác;打篮球|dǎ lánqiú|chơi bóng rổ;大家|dàjiā|mọi người|đại gia;到|dào|đến|đáo;得|de|được (bổ ngữ);等|děng|đợi;弟弟|dìdi|em trai|đệ đệ;第一|dìyī|thứ nhất|đệ nhất;懂|dǒng|hiểu;对|duì|đúng|đối;房间|fángjiān|phòng|phòng gian;非常|fēicháng|rất, vô cùng|phi thường;服务员|fúwùyuán|nhân viên phục vụ|phục vụ viên;高|gāo|cao|cao;告诉|gàosu|nói cho biết|cáo tố;哥哥|gēge|anh trai|ca ca;给|gěi|cho|cấp;公共汽车|gōnggòng qìchē|xe buýt|công cộng khí xa;公司|gōngsī|công ty|công ty;贵|guì|đắt|quý;过|guo|từng (trợ từ)|quá;还|hái|còn, vẫn|hoàn;孩子|háizi|trẻ con|hài tử;好吃|hǎochī|ngon;黑|hēi|đen|hắc;红|hóng|đỏ|hồng;火车站|huǒchēzhàn|ga tàu hỏa|hỏa xa trạm;机场|jīchǎng|sân bay|cơ trường;鸡蛋|jīdàn|trứng gà|kê đản;件|jiàn|cái, chiếc (áo, việc)|kiện;教室|jiàoshì|phòng học|giáo thất;姐姐|jiějie|chị gái|tỷ tỷ;介绍|jièshào|giới thiệu|giới thiệu;进|jìn|vào|tiến;近|jìn|gần|cận;就|jiù|thì, liền|tựu;觉得|juéde|cảm thấy|giác đắc;咖啡|kāfēi|cà phê;开始|kāishǐ|bắt đầu|khai thủy;考试|kǎoshì|thi, kỳ thi|khảo thí;可能|kěnéng|có thể (khả năng)|khả năng;可以|kěyǐ|có thể, được|khả dĩ;课|kè|bài học, tiết học|khóa;快|kuài|nhanh|khoái;快乐|kuàilè|vui vẻ|khoái lạc;累|lèi|mệt;离|lí|cách|ly;两|liǎng|hai (số lượng)|lưỡng;零|líng|không (số 0)|linh;路|lù|đường|lộ;旅游|lǚyóu|du lịch|lữ du;卖|mài|bán|mại;慢|màn|chậm|mạn;忙|máng|bận|mang;每|měi|mỗi|mỗi;妹妹|mèimei|em gái|muội muội;门|mén|cửa|môn;面条|miàntiáo|mì sợi|diện điều;男|nán|nam|nam;您|nín|ngài (kính ngữ);牛奶|niúnǎi|sữa bò|ngưu nãi;女|nǚ|nữ|nữ;旁边|pángbiān|bên cạnh|bàng biên;跑步|pǎobù|chạy bộ|bào bộ;便宜|piányi|rẻ|tiện nghi;票|piào|vé|phiếu;妻子|qīzi|vợ|thê tử;起床|qǐchuáng|ngủ dậy|khởi sàng;千|qiān|nghìn|thiên;铅笔|qiānbǐ|bút chì|duyên bút;晴|qíng|trời nắng|tình;去年|qùnián|năm ngoái|khứ niên;让|ràng|để, cho phép|nhượng;日|rì|ngày|nhật;上班|shàngbān|đi làm|thượng ban;身体|shēntǐ|cơ thể, sức khỏe|thân thể;生病|shēngbìng|bị ốm|sinh bệnh;生日|shēngrì|sinh nhật|sinh nhật;时间|shíjiān|thời gian|thời gian;事情|shìqing|việc|sự tình;手表|shǒubiǎo|đồng hồ đeo tay|thủ biểu;手机|shǒujī|điện thoại di động|thủ cơ;说话|shuōhuà|nói chuyện|thuyết thoại;送|sòng|tặng, tiễn|tống;虽然…但是|suīrán…dànshì|tuy… nhưng;它|tā|nó;踢足球|tī zúqiú|đá bóng;题|tí|đề bài|đề;跳舞|tiàowǔ|nhảy múa|khiêu vũ;外|wài|ngoài|ngoại;完|wán|xong|hoàn;玩|wán|chơi;晚上|wǎnshang|buổi tối|vãn thượng;为什么|wèishénme|tại sao;问|wèn|hỏi|vấn;问题|wèntí|câu hỏi, vấn đề|vấn đề;西瓜|xīguā|dưa hấu|tây qua;希望|xīwàng|hy vọng|hy vọng;洗|xǐ|rửa, giặt|tẩy;小时|xiǎoshí|giờ (đồng hồ)|tiểu thời;笑|xiào|cười|tiếu;新|xīn|mới|tân;姓|xìng|họ|tính;休息|xiūxi|nghỉ ngơi|hưu tức;雪|xuě|tuyết|tuyết;颜色|yánsè|màu sắc|nhan sắc;眼睛|yǎnjing|mắt|nhãn tình;羊肉|yángròu|thịt cừu|dương nhục;药|yào|thuốc|dược;要|yào|muốn, cần|yếu;也|yě|cũng|dã;一下|yíxià|một chút;已经|yǐjīng|đã|dĩ kinh;一起|yìqǐ|cùng nhau|nhất khởi;意思|yìsi|ý nghĩa|ý tư;因为…所以|yīnwèi…suǒyǐ|vì… nên;阴|yīn|trời âm u|âm;游泳|yóuyǒng|bơi|du vịnh;右边|yòubian|bên phải|hữu biên;鱼|yú|cá|ngư;远|yuǎn|xa|viễn;运动|yùndòng|thể thao, vận động|vận động;再|zài|lại, nữa|tái;早上|zǎoshang|buổi sáng|tảo thượng;丈夫|zhàngfu|chồng|trượng phu;找|zhǎo|tìm;着|zhe|đang (trợ từ);真|zhēn|thật|chân;正在|zhèngzài|đang|chính tại;知道|zhīdào|biết|tri đạo;准备|zhǔnbèi|chuẩn bị|chuẩn bị;自行车|zìxíngchē|xe đạp|tự hành xa;走|zǒu|đi bộ|tẩu;最|zuì|nhất|tối;左边|zuǒbian|bên trái|tả biên`;
+
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+const key=p=>p.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/gi,"").toLowerCase();
 const words=[];
-D.forEach(([,s],t)=>s.split(";").forEach(r=>{const[h,p,v,x]=r.split("|");words.push({h,p,v,x,t})}));
-const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+[H1,H2].forEach((s,l)=>s.split(";").forEach(r=>{const[h,p,v,x]=r.trim().split("|");words.push({h,p,v,x,l:l+1,k:key(p)})}));
+words.sort((a,b)=>a.k<b.k?-1:a.k>b.k?1:a.p<b.p?-1:1);
 let known=new Set();
 try{known=new Set(JSON.parse(localStorage.getItem("zh-known")||"[]"))}catch(e){}
 const save=()=>{try{localStorage.setItem("zh-known",JSON.stringify([...known]))}catch(e){}};
-let list=words,i=0,shown=false,tab="learn",q=null;
+let mode="all",letter="",list=[],i=0,shown=false,tab="learn",q=null,showPy=true,auto=false;
 
-function say(t){
-  try{
-    if(!("speechSynthesis" in window))throw 0;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";u.rate=.8;speechSynthesis.speak(u);
-    $("#msg").textContent="";
-  }catch(e){$("#msg").textContent="Trình duyệt này chưa hỗ trợ đọc tiếng Trung."}
+function prog(){
+  const n=words.filter(w=>known.has(w.h)).length;
+  $("#pt").textContent=`Đã thuộc ${n}/${words.length} từ`;
+  $("#pb").style.width=n/words.length*100+"%";
 }
-
 function render(){
+  prog();
+  if(!list.length){
+    $("#hz").textContent="";$("#card").classList.remove("known");$("#pos").textContent="";
+    $("#detail").innerHTML='<p class="hint" style="padding-top:2rem">Chưa có từ nào ở bộ lọc này.</p>';return;
+  }
   const w=list[i];
-  $("#hz").textContent=w.h;
-  $("#hz").style.setProperty("--n",[...w.h].length);
+  $("#hz").textContent=w.h;$("#hz").style.setProperty("--n",[...w.h].length);
   $("#card").classList.toggle("known",known.has(w.h));
-  $("#detail").innerHTML=shown
-    ?`<div class="py">${w.p}</div><div class="vi">${w.v}</div>${w.x?`<div class="hint">Âm Hán Việt: ${w.x}</div>`:""}`
-    :`<p class="hint" style="padding-top:2rem">Chạm vào thẻ để xem nghĩa</p>`;
+  $("#detail").innerHTML=(showPy||shown?`<div class="py">${w.p}</div>`:"")+(shown
+    ?`<div class="vi">${w.v}</div>${w.x?`<div class="hint">Âm Hán Việt: ${w.x}</div>`:""}`
+    :`<p class="hint">Chạm vào thẻ để xem nghĩa</p>`);
   $("#pos").textContent=`Từ ${i+1}/${list.length}`;
-  $("#pt").textContent=`Đã thuộc ${known.size}/${words.length} từ`;
-  $("#pb").style.width=known.size/words.length*100+"%";
 }
-const go=d=>{i=(i+d+list.length)%list.length;shown=false;render()};
+function renderList(){
+  const t=$("#sq").value.trim().toLowerCase();
+  let out="",c="";
+  list.filter(w=>!t||(w.h+w.p+w.k+w.v).toLowerCase().includes(t)).forEach(w=>{
+    const L=w.k[0].toUpperCase();
+    if(L!=c){c=L;out+=`<h2>${L}</h2>`}
+    out+=`<div class="rw"><span class="hzl" lang="zh-CN">${w.h}</span><span class="rt"><b>${w.p}</b>${w.v}<small>HSK ${w.l}${w.x?", Hán Việt: "+w.x:""}</small></span><button data-say="${w.h}">Nghe</button><button class="k${known.has(w.h)?" on":""}" data-k="${w.h}" aria-label="Đánh dấu đã thuộc">✓</button></div>`;
+  });
+  $("#lb").innerHTML=out||'<p class="hint">Không tìm thấy từ nào.</p>';
+}
+function apply(){
+  list=words.filter(w=>(mode=="all"||(mode=="unk"?!known.has(w.h):w.l==mode))&&(!letter||w.k[0]==letter));
+  i=0;shown=false;q=null;render();renderList();
+  if(tab=="quiz")startQuiz();
+}
+const go=d=>{if(!list.length)return;i=(i+d+list.length)%list.length;shown=false;render();if(auto)say(list[i].h)};
+function drop(){list.splice(i,1);if(i>=list.length)i=0;shown=false;render();renderList()}
 
-$("#chips").innerHTML=["Tất cả",...D.map(d=>d[0])].map((n,k)=>`<button class="chip" aria-pressed="${k==0}" data-k="${k-1}">${n}</button>`).join("");
-$("#chips").onclick=e=>{
+$("#lv").innerHTML=[["all","Tất cả"],[1,"HSK 1"],[2,"HSK 2"],["unk","Chưa thuộc"]].map(([m,n])=>`<button class="chip" aria-pressed="${m=="all"}" data-m="${m}">${n}</button>`).join("");
+$("#az").innerHTML=["",...[...new Set(words.map(w=>w.k[0]))].sort()].map(c=>`<button class="chip" aria-pressed="${c==""}" data-c="${c}">${c?c.toUpperCase():"A–Z"}</button>`).join("");
+$("#filters").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
-  const k=+b.dataset.k;list=k<0?words:words.filter(w=>w.t==k);i=0;shown=false;
-  $$(".chip").forEach(c=>c.setAttribute("aria-pressed",c==b));render();
+  if(b.dataset.m!==undefined)mode=b.dataset.m;else letter=b.dataset.c;
+  $$("#lv .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.m==mode));
+  $$("#az .chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.c==letter));
+  apply();
 };
-$("#card").onclick=()=>{shown=!shown;render()};
+$("#optpy").onchange=e=>{showPy=e.target.checked;render()};
+$("#optau").onchange=e=>{auto=e.target.checked};
+$("#sq").oninput=renderList;
+$("#card").onclick=()=>{if(list.length){shown=!shown;render()}};
 $("#next").onclick=()=>go(1);
 $("#prev").onclick=()=>go(-1);
-$("#say").onclick=()=>say(list[i].h);
-$("#yes").onclick=()=>{known.add(list[i].h);save();go(1)};
-$("#no").onclick=()=>{known.delete(list[i].h);save();go(1)};
+$("#say").onclick=()=>{if(list.length)say(list[i].h)};
+$("#yes").onclick=()=>{if(!list.length)return;known.add(list[i].h);save();mode=="unk"?drop():go(1)};
+$("#no").onclick=()=>{if(!list.length)return;known.delete(list[i].h);save();go(1)};
+$("#lb").onclick=e=>{
+  const b=e.target.closest("[data-k]");if(!b)return;
+  const h=b.dataset.k;known.has(h)?known.delete(h):known.add(h);
+  save();b.classList.toggle("on",known.has(h));prog();
+};
 document.addEventListener("keydown",e=>{
   if(tab!="learn")return;
   if(e.key=="ArrowRight")go(1);
   if(e.key=="ArrowLeft")go(-1);
 });
 document.addEventListener("click",e=>{const b=e.target.closest("[data-say]");if(b)say(b.dataset.say)});
-
 $("#tabs").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   tab=b.dataset.t;
   $$("#tabs button").forEach(x=>x.setAttribute("aria-selected",x==b));
-  ["learn","quiz","tone"].forEach(t=>$("#"+t).hidden=t!=tab);
+  ["learn","lst","quiz","tone"].forEach(t=>$("#"+t).hidden=t!=tab);
+  $("#filters").hidden=tab=="tone";
+  if(tab=="learn")render();
+  if(tab=="lst")renderList();
   if(tab=="quiz"&&!q)startQuiz();
 };
 
 const shuf=a=>[...a].sort(()=>Math.random()-.5);
-function startQuiz(){q={s:shuf(words).slice(0,8),n:0,ok:0,done:0};ask()}
+function startQuiz(){q={s:shuf(list).slice(0,10),n:0,ok:0,done:0};ask()}
 function ask(){
   const box=$("#qb");
+  if(!q.s.length){box.innerHTML='<p class="hint">Chưa có từ nào ở bộ lọc này.</p>';return}
   if(q.n>=q.s.length){
-    const m=q.ok>=7?"Rất tốt! Bạn nhớ chắc rồi.":q.ok>=4?"Khá ổn, ôn thêm vài từ nữa nhé.":"Quay lại phần Thẻ từ để luyện thêm nhé.";
+    const m=q.ok>=q.s.length*.8?"Rất tốt! Bạn nhớ chắc rồi.":q.ok>=q.s.length*.5?"Khá ổn, ôn thêm vài từ nữa nhé.":"Quay lại phần Thẻ từ để luyện thêm nhé.";
     box.innerHTML=`<div class="detail"><div class="py">${q.ok}/${q.s.length}</div><p class="vi">${m}</p></div><div class="row"><button class="btn pri" id="again">Làm lại</button></div>`;
     $("#again").onclick=startQuiz;return;
   }
@@ -200,6 +245,14 @@ function ask(){
     $("#nx").onclick=()=>{q.n++;q.done=0;ask()};
   };
 }
+function say(t){
+  try{
+    if(!("speechSynthesis" in window))throw 0;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);u.lang="zh-CN";u.rate=.8;speechSynthesis.speak(u);
+    $("#msg").textContent="";
+  }catch(e){$("#msg").textContent="Trình duyệt này chưa hỗ trợ đọc tiếng Trung."}
+}
 
 const TN=[
 ["mā","妈","mẹ","Cao và đều, gần giống thanh ngang","8,15 52,15"],
@@ -208,7 +261,7 @@ const TN=[
 ["mà","骂","mắng","Rơi dứt khoát từ cao xuống thấp","8,15 52,55"]];
 $("#tgrid").innerHTML=TN.map((t,k)=>`<div class="tn"><svg viewBox="0 0 60 70" aria-hidden="true"><polyline points="${t[4]}"/></svg><div class="py">${t[0]}</div><div><span class="hzs" lang="zh-CN">${t[1]}</span> ${t[2]}</div><p class="hint">Thanh ${k+1}: ${t[3]}</p><button class="btn" data-say="${t[1]}">Nghe</button></div>`).join("");
 
-render();
+apply();
 </script>
 </body>
 </html>
